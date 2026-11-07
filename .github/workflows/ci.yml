@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  JAVA_VERSION: 21
+
+# Each platform job prebuilds the native project with the plugin and makes a release build on the Expo SDK of the
+# lockfile. A release build bundles the JavaScript and runs the build step. The build step writes hotcodepush.json into
+# the app. The job fails when the app lacks that file, when the file names no embedded bundle, or when a file of that
+# bundle is not in the app as its manifest records it. HOTCODEPUSH_OFFLINE keeps the build step from asking the API.
+# So no credential is needed.
+jobs:
+  javascript:
+    name: Check the JavaScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+  android:
+    name: Build the Android release app
+    runs-on: ubuntu-latest
+    env:
+      HOTCODEPUSH_OFFLINE: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: zulu
+          java-version: ${{ env.JAVA_VERSION }}
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+      - run: npm ci
+      - run: npx expo prebuild --platform android --no-install
+      - run: ./gradlew assembleRelease --console=plain
+        working-directory: android
+      - run: |
+          unzip -q android/app/build/outputs/apk/release/app-release.apk 'assets/*' -d apk
+          node .github/scripts/check-embedded-bundle.mjs apk/assets
+  ios:
+    name: Build the iOS simulator release app
+    runs-on: macos-latest
+    env:
+      HOTCODEPUSH_OFFLINE: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: latest-stable
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx expo prebuild --platform ios --no-install
+      - run: pod install
+        working-directory: ios
+      - run: xcodebuild -workspace ios/HotCodePushDemo.xcworkspace -scheme HotCodePushDemo -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath ios/DerivedData CODE_SIGNING_ALLOWED=NO -quiet build 2>&1 | tee xcodebuild.log
+        shell: bash
+      - run: node .github/scripts/check-embedded-bundle.mjs ios/DerivedData/Build/Products/Release-iphonesimulator/HotCodePushDemo.app
+      # The build step's phase is marked to run on every build. Otherwise Xcode warns that it declares no outputs. The
+      # search names the phase because other phases share the wording of that warning.
+      - run: |
+          ! grep "warning: Run script build phase 'Create HotCodePush binary' will be run during every build" xcodebuild.log

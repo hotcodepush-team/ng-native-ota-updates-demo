@@ -1,0 +1,44 @@
+{
+  "name": "ng-native-ota-updates-demo",
+  "version": "1.0.0",
+  "license": "MIT",
+  "main": "src/main.ts",
+  "dependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "@hotcodepush/expo-ota-updates": "0.1.0",
+    "@ng-native/components": "0.21.0",
+    "@ng-native/device": "0.21.0",
+    "@ng-native/fabric": "0.21.0",
+    "@ng-native/metro": "0.21.0",
+    "@ng-native/platform": "0.21.0",
+    "expo": "~58.0.16",
+    "expo-status-bar": "~58.0.3",
+    "expo-system-ui": "~58.0.6",
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-safe-area-context": "~5.10.1"
+  },
+  "devDependencies": {
+    "@angular/compiler-cli": "^22.0.0",
+    "@babel/core": "^7.29.7",
+    "@ng-native/testing": "0.21.0",
+    "@types/react": "~19.3.0",
+    "hotcodepush": "0.2.5",
+    "prettier": "3.9.8",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.0"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "node -e \"console.error('This app targets iOS and Android: use npm start, npm run ios or npm run android. To render it in a browser, see https://ng-native.com/packages/web#beside-a-native-app'); process.exit(1)\"",
+    "fmt": "prettier --write .",
+    "lint": "prettier --check .",
+    "prebuild": "expo prebuild --no-install",
+    "typecheck": "node metro.config.js && ngc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "private": true
+}

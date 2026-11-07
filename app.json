@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "HotCodePushDemo",
+    "slug": "ng-native-ota-updates-demo",
+    "version": "1.0.0",
+    "platforms": ["ios", "android"],
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hotcodepush.demo.ngnative"
+    },
+    "android": {
+      "package": "com.hotcodepush.demo.ngnative",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "scheme": "ngnativeotaupdatesdemo",
+    "extra": {
+      "router": {
+        "root": "src/app"
+      }
+    },
+    "plugins": ["@ng-native/metro", "@hotcodepush/expo-ota-updates"]
+  }
+}
