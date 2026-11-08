@@ -54,7 +54,7 @@ A debug build bundles nothing and asks the development server for its JavaScript
 
 ## Dependencies
 
-The SDK and the CLI are pinned to exact npm versions, `@hotcodepush/expo-ota-updates` and `hotcodepush`, bumped by Dependabot.
+The SDK and the CLI are pinned to exact npm versions, `@hotcodepush/expo-ota-updates` and `hotcodepush`, bumped by Dependabot; the release workflow reads the CLI pin as `cli-version`, so one bump moves the native builds and the release together.
 The `@ng-native/*` packages move together at one version, as the framework releases them.
 Every other dependency is pinned as the NG Native template pins it.
 
