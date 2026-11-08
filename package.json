@@ -24,7 +24,7 @@
     "@babel/core": "^7.29.7",
     "@ng-native/testing": "0.21.0",
     "@types/react": "~19.3.0",
-    "hotcodepush": "0.2.5",
+    "hotcodepush": "0.3.0",
     "prettier": "3.9.8",
     "typescript": "~6.0.3",
     "vitest": "^5.0.0"
