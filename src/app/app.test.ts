@@ -8,6 +8,7 @@ type Result<Method extends keyof HotCodePush> = Awaited<ReturnType<HotCodePush[M
 
 const fakeApi: Partial<HotCodePush> = {
   addListener: async () => ({ remove: async () => undefined }),
+  getChannel: async () => ({ id: 'channel-1', name: 'production', source: 'config' }),
   getDevice: async () => ({ id: 'device-1' }) as Result<'getDevice'>,
   getState: async () => ({ currentRelease: null }) as Result<'getState'>,
   sync: async () => ({ release: null, status: 'up_to_date' }),

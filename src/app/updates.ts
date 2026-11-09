@@ -32,6 +32,7 @@ export class Updates {
     void this.loadDevice();
     void this.loadState();
     this.listenForRollback();
+    void this.followProductionWithoutToken();
   }
 
   async sync(): Promise<void> {
@@ -68,6 +69,22 @@ export class Updates {
     } catch (error) {
       this.reportError(error);
     }
+  }
+
+  // A build without a token carries no channel, and the SDK's own checks skip such a build. The demo
+  // follows `production` by name instead, the channel its app flags discoverable, and syncs once.
+  private async followProductionWithoutToken(): Promise<void> {
+    try {
+      const channel = await this.api.getChannel();
+      if (channel.id !== null || channel.source === 'runtime') {
+        return;
+      }
+      await this.api.setChannel({ name: 'production' });
+    } catch (error) {
+      this.reportError(error);
+      return;
+    }
+    await this.sync();
   }
 
   // The SDK fires this once, on the first start after a rollback.
