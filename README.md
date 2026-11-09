@@ -1,28 +1,68 @@
 # NG Native OTA updates demo by HotCodePush
 
-The demo app for [Expo OTA updates](https://hotcodepush.com/expo-ota-updates) in an [NG Native](https://ng-native.com) app, Angular on Expo, with `@hotcodepush/expo-ota-updates`: one screen showing the bundle version, the current release, the device id, the last sync and the last rollback, a button that syncs now and one that opens the debug screen.
+[![CI](https://github.com/hotcodepush-team/ng-native-ota-updates-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/hotcodepush-team/ng-native-ota-updates-demo/actions/workflows/ci.yml)
+[![Release](https://github.com/hotcodepush-team/ng-native-ota-updates-demo/actions/workflows/release.yml/badge.svg)](https://github.com/hotcodepush-team/ng-native-ota-updates-demo/actions/workflows/release.yml)
+
+An Angular app on Expo through [NG Native](https://ng-native.com), with [`@hotcodepush/expo-ota-updates`](https://github.com/hotcodepush-team/expo-ota-updates) in its config plugins. It is pre-configured for a HotCodePush app on production, so a release build takes the newest over-the-air (OTA) update as soon as it starts. No account, no setup, build it and watch it update. Every merge to `main` ships a release to that app through the [GitHub Action](https://github.com/hotcodepush-team/release-action), and CI builds both platforms.
+
+<p align="center">
+  <img src=".github/assets/screenshot.png" alt="The demo on an iPhone simulator, showing the version badge, the current release and the Sync now button" width="320" />
+</p>
+
+## What you will see
+
+- 🏷️ **A version badge** that changes without a store build, `v1` from the embedded bundle, then the label of the newest release.
+- 🔄 **Sync now**, one call to `sync()` through an Angular service, with the last result and the last rollback on screen.
+- 🛟 **Automatic rollback**: a release whose bundle never renders is rolled back on the next start, and the screen says so.
+- 🔍 **The debug screen**, the SDK's own view of the device, the channel and the last check, one tap away.
+- 🚀 **The release workflow**, `.github/workflows/release.yml`, the GitHub Action releasing once per platform on every merge.
+
+## Tech stack
+
+Angular with NG Native on Expo SDK 58, TypeScript, the HotCodePush Expo SDK loaded through an injection token, Vitest with a stand-in for the SDK, Maestro for the device flows.
 
 ## Getting started
+
+### Prerequisites
+
+Node 24, as `.nvmrc` names it, Xcode or Android Studio, and CocoaPods for the iOS build. A HotCodePush account is not needed to run the demo.
+
+### Run it
 
 ```sh
 nvm use
 npm ci
-npx hotcodepush login
 npx expo prebuild
-npx expo run:ios --configuration Release      # or: npx expo run:android --variant release
+npx expo run:ios --configuration Release
 ```
 
-The native projects are not committed: `npx expo prebuild` generates them with the two config plugins, NG Native's and the SDK's, and installs the pods.
-The committed `hotcodepush.json` names the demo's own app. Delete it and run `npx hotcodepush init` to name yours.
-OTA updates are off in the development build, where the development server serves the JavaScript, so run a release build.
-Every native build runs the CLI's build step, which writes `hotcodepush.json` into the app. An Xcode archive or an Android release build also registers the store build in HotCodePush.
-Without a login the file names no channel and the app takes no updates.
-Set `HOTCODEPUSH_FILES_BASE_URL` and `HOTCODEPUSH_UPDATES_BASE_URL` for the build to point it at the local stack or staging.
+Or `npx expo run:android --variant release`. The native projects are not committed: `prebuild` generates them with the two config plugins, NG Native's and the SDK's. OTA updates are off in a development build, where the development server serves the JavaScript, so run a release build. The app starts on its embedded bundle, syncs against the `production` channel of the demo's app and shows the newest release.
 
-## Usage
+### Ship an update of your own
 
-Run the app once: it shows `v1` and the current release `embedded`.
-Change `VERSION` in `src/app/version.ts`, release with `npx hotcodepush release create --platform ios` or `--platform android`, which bundles that platform itself, tap "Sync now" and reopen the app to see the new label.
+Point the demo at an app of yours and release from your machine:
+
+```sh
+npx hotcodepush init
+npx hotcodepush release create --platform ios
+npx hotcodepush release create --platform android
+```
+
+`init` signs you in and rewrites `hotcodepush.json` with your app. Change `VERSION` in `src/app/version.ts` before the release, rebuild once so the store build registers itself, then reopen the app to see the new label.
+
+## Continuous integration
+
+`release.yml` runs on every merge to `main` and releases the change to the demo's app, once per platform:
+
+```yaml
+- uses: hotcodepush-team/release-action@v0.3.0
+  with:
+    token: ${{ secrets.HOTCODEPUSH_TOKEN }}
+    platform: ios
+    bundle-version: ${{ github.sha }}
+```
+
+`ci.yml` prebuilds and builds a release of the app on both platforms and runs the Maestro flows in `maestro/` on the simulator and the emulator.
 
 ## Development
 
@@ -35,12 +75,11 @@ npm run lint && npm run typecheck
 npm run fmt         # run before every commit
 ```
 
-The app loads the SDK through an injection token in `src/app/updates.ts`, the way NG Native loads any Expo module that has no service of its own, so a test in Node provides a stand-in under that token.
-`CLAUDE.md` holds the native build commands and the wiring the plugins add.
+The app loads the SDK through an injection token in `src/app/updates.ts`, the way NG Native loads any Expo module that has no service of its own, so a test in Node provides a stand-in under that token. `CLAUDE.md` holds the native build commands, the wiring the plugins add and the Maestro flows.
 
 ## Documentation
 
-See [hotcodepush.com/docs/expo](https://hotcodepush.com/docs/expo) for the SDK and [ng-native.com](https://ng-native.com) for the framework.
+See [hotcodepush.com/docs/sdks/expo](https://hotcodepush.com/docs/sdks/expo) and the [NG Native guide](https://ng-native.com/guide/ota-updates).
 
 ## License
 
